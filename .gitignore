@@ -1,0 +1,36 @@
+# Virtual environment
+traffic_env/
+__pycache__/
+*.pyc
+
+# Large pretrained base models — auto-download via ultralytics, don't commit
+models/yolov8m.pt
+models/yolov8m-pose.pt
+models/yolov8s.pt
+# Keep our custom fine-tuned helmet model — this IS our innovation
+!models/helmet_best.pt
+runs/
+
+# Generated/runtime data — don't commit demo session data
+violations.db
+evidence/*.jpg
+challans/*.pdf
+challans/*.png
+test_outputs_violations/
+test_output_*.jpg
+test_output_*.mp4
+plate_crop_*.jpg
+face_blurred_*.jpg
+sample_frame.jpg
+
+# Dataset — too large, link to source instead
+helmet_dataset/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Keep folder structure with placeholder files
+!evidence/.gitkeep
+!challans/.gitkeep
+!models/.gitkeep
