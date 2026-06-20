@@ -1,14 +1,4 @@
-"""
-train_helmet_model.py
-Fine-tunes YOLOv8m on the helmet dataset (With Helmet / Without Helmet classes)
-downloaded from Roboflow. Run this once — training takes roughly 15-30 minutes
-on an RTX 3050 depending on dataset size and epoch count.
 
-After training completes, the best model weights are saved to:
-runs/detect/helmet_train/weights/best.pt
-
-We then copy that file into models/helmet_best.pt for use in detector.py.
-"""
 
 import torch
 from ultralytics import YOLO
@@ -22,9 +12,6 @@ def train_helmet_model():
         print("WARNING: CUDA not detected. Training on CPU will be very slow.")
         print("Stop now and check your environment if this is unexpected.")
 
-    # Start from the pretrained yolov8s.pt — switched from yolov8m to fit
-    # comfortably in 4GB VRAM. Still a strong fine-tuning base, and far
-    # better than nano for accuracy.
     model = YOLO("models/yolov8s.pt")
 
     results = model.train(
