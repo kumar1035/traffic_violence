@@ -1,10 +1,4 @@
-"""
-tracker.py
-Wraps DeepSORT to assign persistent IDs to vehicles across video frames.
-This is what enables wrong-side driving (trajectory direction over time)
-and illegal parking (dwell time in a zone) detection, since single-frame
-detection alone can't tell if the same car is the same car in the next frame.
-"""
+
 
 import time
 from collections import defaultdict, deque
@@ -15,36 +9,18 @@ from deep_sort_realtime.deepsort_tracker import DeepSort
 
 class VehicleTracker:
     def __init__(self, max_age=30, n_init=3, trajectory_length=15):
-        """
-        max_age: how many frames a track survives without a new detection
-                 before being dropped (handles brief occlusions)
-        n_init: how many consecutive detections needed before a track is
-                confirmed (filters out flickering false detections)
-        trajectory_length: how many recent center-points to keep per track,
-                            used for wrong-side direction calculation
-        """
+        
         self.tracker = DeepSort(max_age=max_age, n_init=n_init)
         self.trajectory_length = trajectory_length
 
         # track_id -> deque of (x, y) center points, most recent last
         self.trajectories = defaultdict(lambda: deque(maxlen=trajectory_length))
 
-        # track_id -> timestamp when first seen inside a no-parking zone
-        # (None if not currently inside any zone)
+        
         self.zone_entry_time = {}
 
     def update(self, objects, frame):
-        """
-        Feeds one frame's detections into the tracker and returns tracked
-        vehicles with persistent IDs.
-
-        objects: list of detection dicts from detector.py's detect_objects()
-                 (class_name, confidence, bbox)
-        frame: the actual image/frame (needed by DeepSORT for appearance
-               embedding matching)
-
-        Returns: list of dicts {track_id, class_name, confidence, bbox, center}
-        """
+        
         vehicle_classes = {"car", "motorcycle", "bus", "truck"}
         vehicle_dets = [o for o in objects if o["class_name"] in vehicle_classes]
 
@@ -84,11 +60,7 @@ class VehicleTracker:
         return list(self.trajectories.get(track_id, []))
 
     def check_zone_dwell(self, tracked_vehicle, zone_polygon):
-        """
-        Tracks how long a vehicle has continuously been inside a zone polygon.
-        Call this every frame for every tracked vehicle. Returns dwell time
-        in seconds if currently inside the zone, else None.
-        """
+        
         track_id = tracked_vehicle["track_id"]
         center = tracked_vehicle["center"]
 
@@ -107,11 +79,7 @@ class VehicleTracker:
 
 
 def _point_in_polygon(point, polygon):
-    """
-    Standard ray-casting point-in-polygon test.
-    polygon: list of (x, y) tuples
-    point: (x, y) tuple
-    """
+    
     x, y = point
     n = len(polygon)
     inside = False
@@ -130,10 +98,7 @@ def _point_in_polygon(point, polygon):
 
 
 def draw_tracks(frame, tracked_vehicles, trajectories=None):
-    """
-    Draws tracked vehicle boxes with their persistent ID labels.
-    Optionally draws trajectory trails if trajectories dict is provided.
-    """
+   
     annotated = frame.copy()
 
     for v in tracked_vehicles:
