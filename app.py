@@ -1,11 +1,4 @@
-"""
-app.py
-TrafficVision AI — main Streamlit dashboard.
-Wires together: preprocessor, detector, violations, tracker, ocr,
-database, challan, and analytics into one working application.
 
-Run with: streamlit run app.py
-"""
 
 import os
 import time
@@ -52,7 +45,7 @@ def load_plate_reader():
     return PlateReader(gpu=True)
 
 
-# ---------- Helper: process a single image end-to-end ----------
+
 def process_image(image_bgr, mode, conf_threshold, zone, source="camera"):
     """
     Runs the full pipeline on one image: preprocess -> detect -> violations
@@ -88,7 +81,7 @@ def process_image(image_bgr, mode, conf_threshold, zone, source="camera"):
 
     print(f"[DEBUG] violations found: {len(violations)}\n")
 
-    # Annotate base image
+  
     annotated = draw_detections(processed, objects)
     helmet_colors = {"With Helmet": (0, 255, 0), "Without Helmet": (0, 0, 255)}
     for h in helmets:
@@ -101,7 +94,7 @@ def process_image(image_bgr, mode, conf_threshold, zone, source="camera"):
         cv2.putText(annotated, v["type"], (x1, y1 - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-    # Blur faces for privacy before saving evidence
+    
     face_boxes = []
     for pose in poses:
         fb = face_bbox_from_pose(pose["keypoints"])
@@ -109,13 +102,13 @@ def process_image(image_bgr, mode, conf_threshold, zone, source="camera"):
             face_boxes.append(fb)
     annotated_blurred = blur_faces(annotated, face_boxes) if face_boxes else annotated
 
-    # OCR on vehicles involved in violations
+    
     vehicles = [o for o in objects if o["class_name"] in ("car", "motorcycle", "bus", "truck")]
     enriched_violations = []
 
     for v in violations:
         plate_result = {"text": None, "confidence": 0.0}
-        # find nearest vehicle to this violation's bbox for plate lookup
+        
         if vehicles:
             nearest = min(vehicles, key=lambda veh: _bbox_distance(v["bbox"], veh["bbox"]))
             plate_result = plate_reader.extract_plate_from_vehicle(processed, nearest["bbox"])
@@ -123,12 +116,12 @@ def process_image(image_bgr, mode, conf_threshold, zone, source="camera"):
         plate_number = plate_result.get("text")
         is_repeat, repeat_count, _ = database.check_repeat_offender(plate_number) if plate_number else (False, 0, [])
 
-        # Save evidence image
+        
         timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         evidence_path = os.path.join(EVIDENCE_DIR, f"{v['type']}_{timestamp_str}.jpg")
         cv2.imwrite(evidence_path, annotated_blurred)
 
-        # Generate challan PDF
+        
         challan_id, pdf_path = generate_challan_pdf(
             violation_type=v["type"],
             plate_number=plate_number,
