@@ -1,9 +1,4 @@
-"""
-detector.py
-Loads YOLOv8m for object detection and YOLOv8m-pose for keypoint detection
-(used later for helmet/seatbelt checks). Runs inference on an image and
-returns structured results.
-"""
+
 
 import cv2
 import torch
@@ -26,11 +21,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 class TrafficDetector:
     def __init__(self, det_model_path="models/yolov8m.pt", pose_model_path="models/yolov8m-pose.pt",
                  helmet_model_path="models/helmet_best.pt"):
-        """
-        Loads all models once. First run will auto-download base weights
-        into the models/ folder if not already present. helmet_best.pt is
-        our custom fine-tuned model and must already exist locally.
-        """
+        
         print(f"Loading detection model on {DEVICE}...")
         self.det_model = YOLO(det_model_path)
         self.det_model.to(DEVICE)
@@ -72,10 +63,7 @@ class TrafficDetector:
         return detections
 
     def detect_objects(self, image, conf_threshold=0.4):
-        """
-        Runs object detection on a single image.
-        Returns a list of dicts: {class_name, confidence, bbox (x1,y1,x2,y2)}
-        """
+        
         results = self.det_model(image, conf=conf_threshold, device=DEVICE, verbose=False)
 
         detections = []
@@ -99,13 +87,7 @@ class TrafficDetector:
         return detections
 
     def detect_pose(self, image, conf_threshold=0.4):
-        """
-        Runs pose detection on a single image.
-        Returns a list of dicts: {confidence, bbox, keypoints}
-        keypoints is a list of 17 (x, y, confidence) tuples in COCO format:
-        0=nose, 1-2=eyes, 3-4=ears, 5-6=shoulders, 7-8=elbows,
-        9-10=wrists, 11-12=hips, 13-14=knees, 15-16=ankles
-        """
+        
         results = self.pose_model(image, conf=conf_threshold, device=DEVICE, verbose=False)
 
         poses = []
@@ -130,10 +112,7 @@ class TrafficDetector:
         return poses
 
     def detect_all(self, image, conf_threshold=0.4):
-        """
-        Convenience method: runs object, pose, and helmet detection together.
-        Returns dict with 'objects', 'poses', and 'helmets' keys.
-        """
+        
         objects = self.detect_objects(image, conf_threshold)
         poses = self.detect_pose(image, conf_threshold)
         helmets = self.detect_helmets(image, conf_threshold)
@@ -141,10 +120,7 @@ class TrafficDetector:
 
 
 def draw_detections(image, detections, color=(0, 255, 0)):
-    """
-    Draws bounding boxes with class name and confidence on the image.
-    Used for quick visual verification. Returns a new annotated image.
-    """
+    
     annotated = image.copy()
     for det in detections:
         x1, y1, x2, y2 = det["bbox"]
