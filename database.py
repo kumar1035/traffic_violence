@@ -1,8 +1,3 @@
-"""
-database.py
-SQLite storage for violation records. Handles inserts, queries for the
-evidence log/analytics tabs, and repeat-offender detection by plate number.
-"""
 
 import sqlite3
 from datetime import datetime
@@ -13,18 +8,14 @@ DB_PATH = "violations.db"
 
 
 def get_connection():
-    """Returns a new SQLite connection. Call this per-operation to keep
-    things simple and thread-safe for Streamlit's execution model."""
+    
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
 
 def init_db():
-    """
-    Creates the violations table if it doesn't already exist.
-    Call this once at app startup.
-    """
+    
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -55,9 +46,7 @@ def insert_violation(violation_type, confidence, severity, zone=None,
                       plate_number=None, plate_confidence=None, reason=None,
                       evidence_image_path=None, challan_id=None,
                       challan_pdf_path=None, source="camera"):
-    """
-    Inserts a single violation record. Returns the new row's id.
-    """
+    
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -160,10 +149,7 @@ def check_repeat_offender(plate_number, min_violations=3):
 
 
 def get_repeat_offenders(min_violations=3):
-    """
-    Returns a list of {plate_number, violation_count} for all plates with
-    min_violations or more recorded violations. Used in the shift report.
-    """
+    
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -180,10 +166,7 @@ def get_repeat_offenders(min_violations=3):
 
 
 def get_violations_by_hour():
-    """
-    Returns {hour_of_day (0-23): count} for the hourly heatmap chart.
-    Parses the ISO timestamp stored in each record.
-    """
+    
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT timestamp FROM violations")
@@ -202,7 +185,7 @@ def get_violations_by_hour():
 
 
 def get_summary_stats():
-    """Returns overall counts used for the dashboard header / shift report."""
+    
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -225,7 +208,7 @@ def get_summary_stats():
 
 
 if __name__ == "__main__":
-    # Standalone test — creates the DB and inserts a few sample records
+    
     init_db()
 
     print("\nInserting test records...")
@@ -244,7 +227,7 @@ if __name__ == "__main__":
         confidence=0.88,
         severity=8,
         zone="Silk Board",
-        plate_number="KA01AB1234",  # same plate, second violation
+        plate_number="KA01AB1234",  
         plate_confidence=0.80,
         reason="Test record - rider without helmet, second instance",
         source="camera",
