@@ -1,9 +1,4 @@
-"""
-ocr.py
-Extracts license plate text from vehicle crops using EasyOCR, validates
-against Indian plate format patterns, and provides face-blurring for
-privacy-compliant evidence images.
-"""
+
 
 import re
 
@@ -12,9 +7,6 @@ import easyocr
 import numpy as np
 
 
-# Indian plate format: 2 letters (state) + 2 digits (district) + 1-3 letters
-# (series) + 4 digits (number). E.g. KA 01 AB 1234, MH12AB1234.
-# We allow flexible spacing/no-spacing since OCR output varies.
 INDIAN_PLATE_PATTERN = re.compile(
     r'^[A-Z]{2}[\s-]?\d{1,2}[\s-]?[A-Z]{1,3}[\s-]?\d{3,4}$'
 )
@@ -102,25 +94,13 @@ class PlateReader:
         return cleaned
 
     def validate_plate_format(self, plate_text):
-        """
-        Checks if cleaned plate text plausibly matches Indian plate format.
-        Returns True/False. This filters out OCR noise that doesn't look
-        like a real plate at all.
-        """
+        
         if plate_text is None:
             return False
         return bool(INDIAN_PLATE_PATTERN.match(plate_text))
 
     def extract_plate_from_vehicle(self, image, vehicle_bbox):
-        """
-        Full pipeline: crop -> OCR -> clean -> validate.
-        Returns dict: {text, confidence, valid_format, crop, raw_text}
-
-        Even if the cleaned text doesn't pass strict format validation,
-        raw_text is still returned — useful for transparency in the UI
-        ("here's our best guess, even if we're not fully confident it's
-        a complete/correct plate read").
-        """
+        
         crop = self.crop_plate_region(image, vehicle_bbox)
         text, confidence = self.read_plate(crop)
         valid = self.validate_plate_format(text)
@@ -135,14 +115,7 @@ class PlateReader:
 
 
 def blur_faces(image, face_bboxes, blur_strength=51):
-    """
-    Applies Gaussian blur to face regions for privacy-compliant evidence
-    images. face_bboxes: list of (x1, y1, x2, y2) tuples.
-
-    In practice, face regions can come from the pose model's head
-    keypoints (nose/eyes/ears) expanded into a small bbox, since we don't
-    have a dedicated face detector in this pipeline.
-    """
+    
     blurred = image.copy()
 
     for bbox in face_bboxes:
@@ -161,13 +134,7 @@ def blur_faces(image, face_bboxes, blur_strength=51):
 
 
 def face_bbox_from_pose(pose_keypoints, padding_ratio=0.6):
-    """
-    Derives an approximate face bounding box from pose keypoints
-    (nose, eyes, ears) so we can blur faces without a dedicated face model.
-
-    pose_keypoints: list of 17 [x, y, confidence] from detector.py's pose output
-    Returns (x1, y1, x2, y2) or None if head keypoints aren't visible enough.
-    """
+    
     head_indices = [0, 1, 2, 3, 4]  # nose, left/right eye, left/right ear
     head_points = [pose_keypoints[i] for i in head_indices if pose_keypoints[i][2] > 0.3]
 
