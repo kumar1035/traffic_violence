@@ -1,10 +1,3 @@
-"""
-analytics.py
-Builds Plotly charts from violation data in the database: type distribution,
-zone-wise risk ranking (the "where to prioritize enforcement" answer),
-hourly trend heatmap, and summary metrics. Pulls data via database.py
-query functions — no direct SQL here, keeps concerns separated.
-"""
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -14,10 +7,7 @@ import database
 
 
 def violation_type_pie_chart():
-    """
-    Pie chart of violation counts by type.
-    Returns a Plotly figure, or None if there's no data yet.
-    """
+    
     counts = database.get_violation_counts_by_type()
     if not counts:
         return None
@@ -38,11 +28,7 @@ def violation_type_pie_chart():
 
 
 def zone_risk_bar_chart():
-    """
-    Bar chart ranking zones by total severity score (not just raw count),
-    so it directly answers "where should enforcement be prioritized."
-    Returns a Plotly figure, or None if there's no data yet.
-    """
+    
     zone_data = database.get_violation_counts_by_zone()
     if not zone_data:
         return None
@@ -67,10 +53,7 @@ def zone_risk_bar_chart():
 
 
 def hourly_trend_chart():
-    """
-    Bar chart of violation counts by hour of day — shows enforcement
-    teams which hours need the most coverage.
-    """
+    
     hour_counts = database.get_violations_by_hour()
     if not any(hour_counts.values()):
         return None
@@ -94,10 +77,7 @@ def hourly_trend_chart():
 
 
 def severity_gauge(avg_severity):
-    """
-    A gauge chart showing average severity across all logged violations —
-    a quick-glance dashboard widget for overall risk level.
-    """
+    
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=avg_severity,
@@ -118,10 +98,7 @@ def severity_gauge(avg_severity):
 
 
 def repeat_offenders_table(min_violations=3):
-    """
-    Returns a pandas DataFrame of repeat offenders for display in a
-    Streamlit table — plates with min_violations or more logged.
-    """
+    
     offenders = database.get_repeat_offenders(min_violations)
     if not offenders:
         return pd.DataFrame(columns=["Plate Number", "Violation Count"])
@@ -132,10 +109,7 @@ def repeat_offenders_table(min_violations=3):
 
 
 def evidence_log_table(limit=100):
-    """
-    Returns a pandas DataFrame of recent violations formatted for display
-    in the Evidence Log tab.
-    """
+    
     records = database.get_all_violations(limit)
     if not records:
         return pd.DataFrame(columns=[
@@ -156,8 +130,7 @@ def evidence_log_table(limit=100):
 
 
 if __name__ == "__main__":
-    # Standalone test — requires violations.db to have some data.
-    # Run database.py first if you haven't, to populate test records.
+    
     database.init_db()
 
     print("Testing analytics functions...\n")
