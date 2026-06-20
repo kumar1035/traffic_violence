@@ -1,10 +1,3 @@
-"""
-challan.py
-Generates a digital e-challan PDF for each violation: violation details,
-annotated evidence image, QR code (containing challan ID + plate + a mock
-verification URL), and a unique challan ID. This is the artifact that
-closes the loop from detection to an actual enforcement document.
-"""
 
 import os
 import uuid
@@ -39,11 +32,7 @@ def generate_challan_id():
 
 
 def generate_qr_code(challan_id, plate_number, save_path):
-    """
-    Generates a QR code containing the challan ID, plate number, and a
-    mock verification URL. In a real deployment this URL would point to
-    an actual lookup/payment portal.
-    """
+    
     verify_url = f"https://trafficvision-demo.local/verify/{challan_id}"
     qr_data = f"Challan: {challan_id}\nPlate: {plate_number}\nVerify: {verify_url}"
 
@@ -188,7 +177,7 @@ def generate_challan_pdf(violation_type, plate_number, confidence, severity,
 
 
 if __name__ == "__main__":
-    # Standalone test — generates a sample challan PDF
+    
     print("Generating a test challan...")
 
     challan_id, pdf_path = generate_challan_pdf(
