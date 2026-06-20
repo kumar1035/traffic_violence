@@ -8,13 +8,11 @@ Built for Flipkart Gridlock Hackathon 2.0 - Round 2 — Theme: Automated Photo I
 
 TrafficVision AI processes traffic images and automatically detects helmet violations, triple riding, wrong-side driving, and illegal parking using a fine-tuned YOLOv8 pipeline. It reads license plates via OCR, generates digital e-challan PDFs with QR codes, blurs faces for privacy compliance, tracks repeat offenders, and provides zone-wise enforcement analytics — closing the loop from raw camera footage to an actionable enforcement document.
 
-## Live Demo
 
-[Streamlit Cloud link here once deployed]
 
 ## Demo Video
+https://youtu.be/GBwG_eq4SUA 
 
-[video URL here]
 
 ## Architecture
 
@@ -108,10 +106,9 @@ Opens automatically at `http://localhost:8501`. First run auto-downloads base YO
 - Wrong-side driving and illegal parking detection require video input (multi-frame tracking) and are not available for single-image uploads
 - Trained on a relatively small dataset (126 validation images) due to hackathon time constraints — production deployment would benefit from a larger, India-specific training set (e.g. IDD)
 
-## Dataset Sources
 
-- Helmet detection training data: [Roboflow Bike Helmet Detection dataset](https://universe.roboflow.com/bike-helmets/bike-helmet-detection-2vdjo)
-- Base object detection: COCO (via YOLOv8 pretrained weights)
 
 ## Team Name
 -minecraft
+Anuj Kumar
+Sujal Bhatu
