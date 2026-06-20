@@ -1,18 +1,11 @@
-"""
-preprocessor.py
-Handles image enhancement before detection: resizing, contrast enhancement,
-denoising, and special modes (night / rain) for poor visibility conditions.
-"""
+
 
 import cv2
 import numpy as np
 
 
 def resize_image(image, target_size=640):
-    """
-    Resize image so the longer side equals target_size, keeping aspect ratio.
-    YOLOv8 handles letterbox padding internally, so this just speeds up inference.
-    """
+   
     h, w = image.shape[:2]
     scale = target_size / max(h, w)
     new_w, new_h = int(w * scale), int(h * scale)
@@ -21,11 +14,7 @@ def resize_image(image, target_size=640):
 
 
 def apply_clahe(image, clip_limit=2.0, tile_grid_size=(8, 8)):
-    """
-    Contrast Limited Adaptive Histogram Equalization.
-    Improves visibility in low-light / shadowed images without blowing out
-    bright regions (like headlights), since it works on local tiles.
-    """
+    
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     l_channel, a_channel, b_channel = cv2.split(lab)
 
@@ -38,11 +27,7 @@ def apply_clahe(image, clip_limit=2.0, tile_grid_size=(8, 8)):
 
 
 def denoise_image(image, strength=10):
-    """
-    Removes noise from rain / motion blur / low-quality camera feeds.
-    fastNlMeansDenoisingColored works well for color images without
-    excessive blurring of edges.
-    """
+    
     denoised = cv2.fastNlMeansDenoisingColored(
         image, None, strength, strength, 7, 21
     )
@@ -50,19 +35,14 @@ def denoise_image(image, strength=10):
 
 
 def sharpen_image(image):
-    """
-    Mild unsharp mask to recover edge detail lost during denoising.
-    """
+    
     gaussian = cv2.GaussianBlur(image, (0, 0), sigmaX=3)
     sharpened = cv2.addWeighted(image, 1.5, gaussian, -0.5, 0)
     return sharpened
 
 
 def night_mode(image):
-    """
-    Aggressive enhancement pipeline for low-light / nighttime footage.
-    Boosts brightness, applies stronger CLAHE, then denoises.
-    """
+    
     brightened = cv2.convertScaleAbs(image, alpha=1.3, beta=30)
     enhanced = apply_clahe(brightened, clip_limit=3.5, tile_grid_size=(8, 8))
     denoised = denoise_image(enhanced, strength=8)
@@ -70,22 +50,14 @@ def night_mode(image):
 
 
 def rain_mode(image):
-    """
-    Pipeline tuned for rain streaks / wet-lens blur.
-    Stronger denoise pass followed by a sharpen to recover edges.
-    """
+    
     denoised = denoise_image(image, strength=15)
     sharpened = sharpen_image(denoised)
     return sharpened
 
 
 def apply_roi_mask(image, polygon_points):
-    """
-    Masks out everything outside a given zone polygon.
-    polygon_points: list of (x, y) tuples defining the zone of interest,
-    e.g. the stop-line area or no-parking zone.
-    Returns the masked image and the mask itself (for visualization).
-    """
+    
     mask = np.zeros(image.shape[:2], dtype=np.uint8)
     pts = np.array(polygon_points, dtype=np.int32)
     cv2.fillPoly(mask, [pts], 255)
@@ -95,15 +67,7 @@ def apply_roi_mask(image, polygon_points):
 
 
 def preprocess_pipeline(image, mode="normal", roi_polygon=None, target_size=640):
-    """
-    Main entry point. Runs the full preprocessing chain based on selected mode.
-
-    mode: "normal" | "night" | "rain"
-    roi_polygon: optional list of (x, y) points to mask a specific zone
-    target_size: resize target for YOLO input
-
-    Returns the processed image ready for detection.
-    """
+    
     processed = image.copy()
 
     if mode == "night":
