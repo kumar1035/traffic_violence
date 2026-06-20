@@ -1,18 +1,4 @@
-"""
-violations.py
-Converts raw detections (objects + pose keypoints) into violation records.
-Each check function returns a list of violation dicts with an explainability
-reason string, so the UI can show "why was this flagged" to the user.
 
-Violation dict format:
-{
-    "type": str,            e.g. "helmet_violation"
-    "confidence": float,
-    "bbox": (x1, y1, x2, y2),
-    "reason": str,          human-readable explanation
-    "severity": int,        1-10 risk score
-}
-"""
 
 import math
 
@@ -45,10 +31,7 @@ def _bbox_overlaps(bbox_a, bbox_b):
 
 
 def _person_on_vehicle(person_bbox, vehicle_bbox, overlap_threshold=0.3):
-    """
-    Checks if a person's bbox sufficiently overlaps a motorcycle bbox,
-    meaning they're likely riding it rather than standing nearby.
-    """
+   
     ax1, ay1, ax2, ay2 = person_bbox
     bx1, by1, bx2, by2 = vehicle_bbox
 
@@ -69,15 +52,7 @@ def _person_on_vehicle(person_bbox, vehicle_bbox, overlap_threshold=0.3):
 
 
 def _helmet_near_motorcycle(helmet_bbox, moto_bbox, max_distance_ratio=0.6):
-    """
-    Checks if a helmet/head detection is plausibly positioned on a rider of
-    the given motorcycle. A head sits ABOVE the motorcycle's bbox, not
-    inside it, so we check horizontal alignment + vertical proximity
-    instead of requiring strict bbox overlap.
-
-    max_distance_ratio: how far above the motorcycle (relative to the
-    motorcycle's own height) the head is allowed to be.
-    """
+    
     hx1, hy1, hx2, hy2 = helmet_bbox
     mx1, my1, mx2, my2 = moto_bbox
 
@@ -88,27 +63,17 @@ def _helmet_near_motorcycle(helmet_bbox, moto_bbox, max_distance_ratio=0.6):
     moto_width = mx2 - mx1
     max_gap = moto_height * max_distance_ratio
 
-    # Horizontal: head center should roughly align with the motorcycle's width
-    # (allow a little overhang on either side)
+    
     horizontal_ok = (mx1 - moto_width * 0.3) <= head_center_x <= (mx2 + moto_width * 0.3)
 
-    # Vertical: head bottom should be above the motorcycle's top edge,
-    # but not unreasonably far above it
+    
     vertical_ok = (my1 - max_gap) <= head_bottom_y <= (my1 + moto_height * 0.5)
 
     return horizontal_ok and vertical_ok
 
 
 def check_helmet(helmet_detections, motorcycles, conf_threshold=0.35):
-    """
-    Checks for helmet violations using the fine-tuned helmet detection model
-    (models/helmet_best.pt), which directly outputs "With Helmet" or
-    "Without Helmet" classes — no heuristic guessing involved.
-
-    A violation is flagged when a "Without Helmet" detection is positioned
-    plausibly above a motorcycle (i.e. on a rider), using proximity rather
-    than strict bbox overlap, since a head sits above the bike's box.
-    """
+    
     violations = []
 
     for det in helmet_detections:
@@ -139,10 +104,7 @@ def check_helmet(helmet_detections, motorcycles, conf_threshold=0.35):
 
 
 def check_triple_riding(poses, motorcycles, max_legal_riders=2):
-    """
-    Counts how many people overlap a single motorcycle's bounding box.
-    More than max_legal_riders (default 2) = triple riding violation.
-    """
+    
     violations = []
 
     for moto in motorcycles:
@@ -165,14 +127,7 @@ def check_triple_riding(poses, motorcycles, max_legal_riders=2):
 
 
 def check_stop_line(objects, stop_line_y, signal_is_red=True):
-    """
-    Checks if any vehicle's bbox bottom edge has crossed a virtual
-    horizontal stop line while the signal is red.
-
-    stop_line_y: pixel y-coordinate of the virtual stop line in the image
-    signal_is_red: bool flag — in a real deployment this comes from
-                   signal controller data or a separate light-state detector
-    """
+    
     violations = []
 
     if not signal_is_red:
@@ -202,15 +157,7 @@ def check_stop_line(objects, stop_line_y, signal_is_red=True):
 
 
 def check_illegal_parking(tracked_vehicle, zone_polygon, dwell_seconds, dwell_threshold=120):
-    """
-    Checks a single tracked vehicle (from tracker.py) against a no-parking
-    zone. If the vehicle's center has stayed inside the zone polygon for
-    longer than dwell_threshold seconds, flag it.
-
-    tracked_vehicle: dict with 'bbox', 'class_name', 'confidence', 'track_id'
-    zone_polygon: list of (x, y) points defining the no-parking zone
-    dwell_seconds: how long this track_id has been inside the zone
-    """
+    
     if dwell_seconds < dwell_threshold:
         return None
 
@@ -228,13 +175,7 @@ def check_illegal_parking(tracked_vehicle, zone_polygon, dwell_seconds, dwell_th
 
 
 def check_wrong_side(tracked_vehicle, trajectory_points, expected_direction):
-    """
-    Checks if a tracked vehicle's movement direction opposes the expected
-    flow direction for that road/lane.
-
-    trajectory_points: list of (x, y) center points over recent frames
-    expected_direction: "left_to_right" | "right_to_left" | "top_to_bottom" | "bottom_to_top"
-    """
+   
     if len(trajectory_points) < 2:
         return None
 
@@ -269,14 +210,7 @@ def check_wrong_side(tracked_vehicle, trajectory_points, expected_direction):
 
 
 def run_all_checks(objects, poses, helmets, stop_line_y=None, signal_is_red=False, conf_filter=0.6):
-    """
-    Runs the frame-level checks (helmet, triple riding, stop line) that
-    don't require multi-frame tracking. Tracking-based checks (parking,
-    wrong-side) are called separately from app.py once tracker.py provides
-    track history.
-
-    conf_filter: minimum confidence to keep a violation in the final list
-    """
+   
     motorcycles = [o for o in objects if o["class_name"] == "motorcycle"]
 
     all_violations = []
