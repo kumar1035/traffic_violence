@@ -110,5 +110,5 @@ Opens automatically at `http://localhost:8501`. First run auto-downloads base YO
 
 ## Team Name
 -minecraft
-Anuj Kumar
-Sujal Bhatu
+[Anuj Kumar]
+[Sujal Bhatu]
