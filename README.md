@@ -85,7 +85,7 @@ cd traffic_violence
 
 python -m venv traffic_env
 traffic_env\Scripts\activate          # Windows
-# source traffic_env/bin/activate     # Mac/Linux
+
 
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
